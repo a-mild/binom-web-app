@@ -5,34 +5,70 @@ html, body {
 	background-color: lightblue;
 }
 
-
-
-/*
-#plotTypeSelectionBar {
-	display: block;
+#main {
+	height: 100%;
+	display: flex;
+	justify-content: flex-start;
+	align-items: stretch;
 }
 
-.PlotTypeButton {
+#chart-controller {
+	display: inline-block flex;
+	float: left;
+	width: 15em;
+	height: 100%;
+	padding-left: 5px;
+}
+
+
+
+.canvasjs-chart-canvas {
+	height: 100%;
+}
+
+#canvasjs-react-chart-container-0 {
 	display: inline-block;
 }
 
-#customizePlot {
-	flex: 1;
+.controller-row {
+	display: flex;
+	align-items: stretch;
 }
 
-#inputN {
+.label-column {
+	width: 4em;
+}
+
+.input-column {
+}
+
+#plot-type-controller label {
 	display: inline-block;
 }
 
-#inputNfield {
-	border: none;
+#plot-type-controller input {
+	display: inline-block;
+}
+
+.input-number {
 	text-align: right;
+	border: none;
+	border-radius: 1em;
 }
 
-#inputP {
-	display: inline-block;
+.slider-wrapper {
+	display: block;
+	justify-content: center;
+	align-self: center;
+	width: 20px;
+    height: 100px;
+    padding: 1em;
 }
 
-#inputPSlider {
-
-}*/
+.slider-wrapper input {
+	width: 100px;
+    height: 20px;
+    margin: 0;
+    transform-origin: 50px 50px;
+    transform: rotate(-90deg);
+}

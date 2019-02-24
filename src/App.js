@@ -61,75 +61,116 @@ function createDataPoints(n, p) {
 class PlotController extends Component {
 	constructor(props) {
 		super(props);
+		this.state = {show: false}
 		this.handleNChange = this.handleNChange.bind(this);
 		this.handlePChange = this.handlePChange.bind(this);
 		this.handleColorChange = this.handleColorChange.bind(this);
+		this.togglePlotOptions = this.togglePlotOptions.bind(this);
 	}
+
+	togglePlotOptions() {
+		this.setState({show: !this.state.show});
+	}
+
+	renderTypeController() {
+		return (
+			<div className="input-column">
+				<input 
+					type="radio" 
+					name="plot-type" 
+					id="binom-pdf" 
+					value="BinomPDF
+					checked"/>
+				<label for="binom-pdf">BinomPDF</label><br/>
+				<input 
+					type="radio" 
+					name="plot-type"
+					id="binom-cdf" 
+					value="BinomCDF"/>
+				<label for="binom-cdf">BinomCDF</label><br/>
+				<input 
+					type="radio" 
+					name="plot-type" 
+					id="1-binom-cdf"
+					value="1-BinomCDF"/>
+				<label for="1-binom-cdf">1 - BinomCDF</label>
+			</div>
+			);
+	}
+
 	renderNController() {
 		return (
-			<div id="inputN">
-				<label for="inputNfield">
-				n
+			<div className="input-column">
 				<input 
 					type="number" 
-					id="inputNfield"
+					className="input-number"
 					min="0"
 					value={this.props.plotOptions.n}
 					onChange={this.handleNChange}
 				/>
-				</label>
 			</div>
 			);
 	}
 
 	renderPController() {
 		return (
-			<div id="inputP">
-				<label for="inputPSlider">
-				p 
-				<input 
-					type="range" 
-					id="inputPSlider"
-					min="0" max="100" step="0.01"
-					value={this.props.plotOptions.p}
-					onChange={this.handlePChange}
-				/>
+			<div className="input-column">
+				<datalist id="tickmarks">
+				  <option value="0"/>
+				  <option value="10"/>
+				  <option value="20"/>
+				  <option value="30"/>
+				  <option value="40"/>
+				  <option value="50"/>
+				  <option value="60"/>
+				  <option value="70"/>
+				  <option value="80"/>
+				  <option value="90"/>
+				  <option value="100"/>
+				</datalist>
 				<input
 				type="number"
+				className="input-number"
 				min="0" max="100" step="0.01"
 				value={this.props.plotOptions.p}
 				onChange={this.handlePChange}
 				/>
-				</label>
+				<div className="slider-wrapper">
+					<input 
+						type="range" 
+						list="tickmarks"
+						id="inputPSlider"
+						min="0" max="100" step="0.01"
+						value={this.props.plotOptions.p}
+						onChange={this.handlePChange}
+					/>
+				</div>
 			</div>
 		);
 	}
 
 	renderColorController() {
 		return (
-			<div id="plot-color-selector">
-				<label for="plot-color-input">
-				Color
+			<div className="input-column">
 				<input 
 					type="color"
 					id="plot-color-input"
 					value={this.props.plotOptions.color}
 					onChange={this.handleColorChange}
 				/>
-				</label>
 			</div>)
 	}
 
 	handleNChange(e) {
-		this.props.onNChange(e.target.value);
+		this.props.onNChange(this.props.plotId, e.target.value);
 	}
 
 	handlePChange(e) {
-		this.props.onPChange(e.target.value);
+		this.props.onPChange(this.props.plotId, e.target.value);
 	}
 
 	handleColorChange(e) {
-		this.props.onColorChange(e.target.value);
+		this.props.onColorChange(this.props.plotId, e.target.value);
 	}
 
 	render() {
@@ -138,29 +179,40 @@ class PlotController extends Component {
 		const color = this.props.plotOptions.color;
 
 		return (
-			<div>
-				{this.renderNController()}
-				{this.renderPController()}
-				{this.renderColorController()}
-			</div>
-			);
-	}
-}
-
-class PlotSelectionBar extends Component {
-	render() {
-		const plots = this.props.plotNames.map( (plotName, plotId) => {
-			return (
-				<li key={plotId}>
-				{plotName}
-				</li>
-				);
-		});
-
-		return (
-			<div>
-				<ol>{plots}</ol>
-				<button name="add plot" />
+			<div className="plot-controller-container">
+				<button 
+					className="drop-options-button"
+					onClick={this.togglePlotOptions}>
+					Plot {this.props.plotId}
+				</button>
+				<div id="plot-controller" 
+					style={this.state.show ? {display: "block"} : {display: "none"}}
+				>
+					<div className="controller-row">
+						<div className="label-column">
+						Type
+						</div>
+						{this.renderTypeController()}
+					</div>	
+					<div className="controller-row">
+						<div className="label-column">
+						n
+						</div>
+						{this.renderNController()}
+					</div>
+					<div className="controller-row">
+						<div className="label-column">
+						p
+						</div>
+						{this.renderPController()}
+					</div>
+					<div className="controller-row">
+						<div className="label-column">
+						Color
+						</div>
+						{this.renderColorController()}
+						</div>
+				</div>
 			</div>
 			);
 	}
@@ -169,19 +221,20 @@ class PlotSelectionBar extends Component {
 class ChartController extends Component {
 	render() {
 		const plotData = this.props.plotData;
-		const plotNames = plotData.map( 
-			plot => plot.name
-			);
-		const current = 0;
-
-		return (
-			<div>
-				<PlotSelectionBar plotNames={plotNames}/>
-				<PlotController 
-					plotOptions={plotData[current]}
+		const plotControllers = plotData.map( (plotOptions, plotId) => {
+			return (
+					<PlotController
+					plotId={plotId}
+					plotOptions={plotOptions}
 					onNChange={this.props.onNChange}
 					onPChange={this.props.onPChange}
 					onColorChange={this.props.onColorChange}/>
+			)});
+
+		return (
+			<div id="chart-controller">
+				{plotControllers}
+			<button onClick={this.props.addPlot}>Add new plot</button>
 			</div>
 		);
 	}
@@ -208,36 +261,42 @@ class App extends Component {
 		this.handleNChange = this.handleNChange.bind(this);
 		this.handlePChange = this.handlePChange.bind(this);
 		this.handleColorChange = this.handleColorChange.bind(this);
+		this.addPlot = this.addPlot.bind(this);
 	}
 
-	handleNChange(n) {
-		const current = this.state.selectedPlot;
-		const p = this.state.plotData[current].p;
+	addPlot() {
+		const lastPlot = this.state.plotData.slice(-1);
+		const newstate = update(this.state, {
+			plotData: {$push: lastPlot}
+		});
+		this.setState(newstate);
+	}
+
+	handleNChange(plotId, n) {
+		const p = this.state.plotData[plotId].p;
 		const newdps = createDataPoints(n, p/100);
 		const newstate = update(this.state, {
-			plotData: {[current]: {
+			plotData: {[plotId]: {
 				n: {$set: n},
 				dataPoints: {$set: newdps}}},
 			});
 		this.setState(newstate)
 	}
 
-	handlePChange(p) {
-		const current = this.state.selectedPlot;
-		const n = this.state.plotData[current].n;
+	handlePChange(plotId, p) {
+		const n = this.state.plotData[plotId].n;
 		const newdps = createDataPoints(n, p/100);
 		const newstate = update(this.state, {
-			plotData: {[current]: {
+			plotData: {[plotId]: {
 				p: {$set: p},
 				dataPoints: {$set: newdps}}},
 			});
 		this.setState(newstate);
 	}
 
-	handleColorChange(color) {
-		const current = this.state.selectedPlot;
+	handleColorChange(plotId, color) {
 		const newstate = update(this.state, {
-			plotData: {[current]: {color: {$set: color}},
+			plotData: {[plotId]: {color: {$set: color}},
 			}
 		})
 		this.setState(newstate)
@@ -260,16 +319,21 @@ class App extends Component {
 		};
 
 		return (
-			<div>
-				<CanvasJSChart 
-					options={chartOptions}
-					onRef={ref => this.chart = ref}
-				/>
+			<div id="main">
 				<ChartController 
 					plotData={chartOptions.data}
 					onNChange={this.handleNChange}
 					onPChange={this.handlePChange}
 					onColorChange={this.handleColorChange}
+					addPlot={this.addPlot}
+				/>
+				<CanvasJSChart 
+					containerProps={ {
+						width: "90%",
+						height: "100%",
+					} }
+					options={chartOptions}
+					onRef={ref => this.chart = ref}
 				/>
 			</div>)
 	}
