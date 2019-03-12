@@ -1,6 +1,7 @@
 {
   "name": "cnvsjs",
   "version": "0.1.0",
+  "homepage": "http://milden.net/binomDist",
   "private": true,
   "dependencies": {
     "immutability-helper": "^3.0.0",

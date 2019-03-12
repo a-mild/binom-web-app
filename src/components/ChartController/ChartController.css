@@ -1,0 +1,34 @@
+.chart-controller-wrapper {
+	height: 100%;
+	background-color: honeydew;
+	box-shadow: 5px 5px 10px honeydew;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 20%;
+	z-index: 1;
+	overflow-x: auto;
+	overflow-y: scroll;
+
+	transform: translateX(-100%);
+
+}
+
+.chart-controller-wrapper.open {
+	transform: translateX(0);
+}
+
+#chart-controller {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+
+#add-new-plot-button {
+	width: 100%;
+	background-color: honeydew;
+	border: none;
+	border-bottom: 2px ridge lightgrey;
+	margin-top: 0.5em;
+}
