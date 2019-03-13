@@ -12,11 +12,6 @@
 	margin-left: 20%;
 }
 
-.page-content-wrapper.full {
-	margin-left: 0;
-	width: 100%;
-}
-
 #chart-controller-togglebutton {
 	display: none;
 	height: 100%;

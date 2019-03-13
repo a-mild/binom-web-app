@@ -1,15 +1,11 @@
 import React from 'react';
 
 function ToggleArrow(props) {
-	if (props.show) {
-		return (<i className="fa fa-angle-down" style={toggleArrowStyle}/>)
+	if (props.menuOpen) {
+		return (<i className="fa fa-angle-down" />)
 	} else {
-		return (<i className="fa fa-angle-right"  style={toggleArrowStyle}/>)
+		return (<i className="fa fa-angle-right" />)
 	}
-}
-
-const toggleArrowStyle = {
-
 }
 
 export default ToggleArrow;

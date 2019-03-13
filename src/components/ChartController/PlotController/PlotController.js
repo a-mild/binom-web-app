@@ -22,7 +22,18 @@ class PlotController extends Component {
 	}
 
 	togglePlotOptions = () => {
-		this.setState({show: !this.state.show});
+		if (!this.state.enteringName) {
+			this.setState(prevState => {
+				return {show: !prevState.show}
+			});
+		}
+	}
+
+	togglePlotNameInput = (e) => {
+		e.stopPropagation();
+		this.setState(prevState => {
+			return {enteringName: !prevState.enteringName}
+		});
 	}
 
 	deletePlot = (e) => {
@@ -30,65 +41,44 @@ class PlotController extends Component {
 	}
 
 	changePlotName = (e) => {
-		//e.stopPropagation();
-		this.setState(prevState => {
-			return {enteringName: !prevState.enteringName}
-		});
+		this.props.changePlotName(this.props.plotId, e.target.value);
 	}
 
-	PlotButton = () => {
-		const name = this.props.plotOptions.name;
-
-		const plotNameInput = <input type="text" value={name} disabled={!this.state.enteringName}/>
+	renderPlotControllerBar = () => {
 		return (
-			<div 
-				className="plot-options-dropbutton"
+			<div className="plot-controller-dropbutton"
 				onClick={this.togglePlotOptions}
 			>
-				<ToggleArrow show={this.state.show}/> {plotNameInput}
-				
-					<button className="icon-button" 
-						onClick={(e) => this.changePlotName(e)}>
-					<i className="fa fa-pencil"/>
-					</button>
-					<button className="icon-button" 
-						onClick={(e) => this.deletePlot(e)}>
-					<i className="fa fa-trash"/>
-					</button>
-
+				<ToggleArrow menuOpen={this.state.show}/>
+				<input 
+					type="text" 
+					value={this.props.plotName} 
+					disabled={!this.state.enteringName}
+					onChange={(e) => this.changePlotName(e)}
+				/>
+				<button className="icon-button" 
+					onClick={(e) => this.togglePlotNameInput(e)}>
+				<i className="fa fa-pencil"/>
+				</button>
+				<button className="icon-button" 
+					onClick={(e) => this.deletePlot(e)}>
+				<i className="fa fa-trash"/>
+				</button>
 			</div>
 		);
 	}
 
 	render() {
-		const basicOptionsFunctions = {
-			onNChange: this.props.onNChange,
-			onPChange: this.props.onPChange,
-			onColorChange: this.props.onColorChange,
-		};
-
-		const furtherOptionsFunctions = {
-			onSigmaRadiusChange: this.props.onSigmaRadiusChange,
-			toggleSigmaRadius: this.props.toggleSigmaRadius,
-		};
+		const style = this.state.show ? {} : {display: "none"};
 
 		return (
 			<div className="plot-controller-container">
-				{this.PlotButton()}
+				{this.renderPlotControllerBar()}
 				<div 
-					className="plot-options-container"
-					style={this.state.show ? {display: "block"} : {display: "none"}}
+					className="plot-controller-content"
+					style={style}
 				>
-					<BasicOptions
-						plotId={this.props.plotId}
-						plotOptions={this.props.plotOptions}
-						functions={basicOptionsFunctions}
-					/>
-					<AdvancedOptions
-						plotId={this.props.plotId}
-						plotOptions={this.props.plotOptions}
-						functions={furtherOptionsFunctions}
-					/>
+					{this.props.children}
 				</div>
 			</div>
 			);

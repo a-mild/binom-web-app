@@ -1,4 +1,5 @@
 .plot-controller-container {
+	width: 100%;
 	padding-left: 0.3em;
 	padding-right: 0.5em;
 	padding-top: 0.1em;
@@ -7,7 +8,7 @@
 	border-bottom: 2px ridge lightgrey;
 }
 
-.plot-options-dropbutton {
+.plot-controller-dropbutton {
 	width: 100%;
 	background-color: honeydew;
 	text-align: left;
@@ -23,7 +24,7 @@
 	display: flex;
 }
 
-.plot-options-container {
+.plot-controller-content {
 	width: 100%;
 	display: flex;
 	flex-direction: column;
@@ -57,12 +58,16 @@
 label {
 }
 
-input[type="text"]:disabled {
+input[type="text"] {
 	padding-left: 0.3em;
-	background-color: honeydew;
-	font-family: "Trebuchet MS", Helvetica, sans-serif;
 	color: #000000;
+	font-family: "Trebuchet MS", Helvetica, sans-serif;
+}
+
+input[type="text"]:disabled {
+	background-color: honeydew;
 	border: none;
+	pointer-events: none;
 }
 
 input[type="radio"] {

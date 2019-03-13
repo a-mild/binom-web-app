@@ -4,6 +4,9 @@ import update from 'immutability-helper';
 import { createDataPoints, calculateMu, calculateSigma, hexToRgb, toRgbaString } from "./functions/myMath";
 
 import ChartController from "./components/ChartController/ChartController";
+import PlotController from "./components/ChartController/PlotController/PlotController";
+import BasicOptions from "./components/ChartController/PlotController/BasicOptions";
+import AdvancedOptions from "./components/ChartController/PlotController/AdvancedOptions"
 import CanvasJSReact from './assets/js/canvasjs.react';
 
 import "./App.css"
@@ -54,13 +57,6 @@ class App extends Component {
 		}
 	}
 
-	/*toggleChartController = () => {
-		this.setState(prevState => {
-			return {showChartController: !prevState.showChartController}}
-		);
-		this.chart.render();
-	}*/
-
 	addPlot = () => {
 		const newstate = update(this.state, {
 			chartOptions: {data: {$push: [new this.DefaultPlot()]}}
@@ -77,8 +73,13 @@ class App extends Component {
 		this.setState(newstate);
 	}
 
-	changePlotName = (e, name) => {
-
+	changePlotName = (plotId, plotName) => {
+		const newstate = update(this.state, {
+			chartOptions: {
+				data: {[plotId]: {name: {$set: plotName}}}
+			}
+		});
+		this.setState(newstate);
 	}
 
 	handleNChange = (plotId, n) => {
@@ -199,30 +200,39 @@ class App extends Component {
 	}
 
 	render() {
-		let wrapperClasses = "page-content-wrapper";
-
-		if (!this.state.showChartController) {
-			wrapperClasses = "page-content-wrapper full";
-		}
+		const plotControllers = this.state.chartOptions.data.map( (plotOptions, plotId) => {
+			return (
+				<PlotController
+					plotId={plotId}
+					plotName={plotOptions.name}
+					changePlotName={this.changePlotName}
+					deletePlot={this.deletePlot}
+				>
+					<BasicOptions
+						plotId={plotId}
+						plotOptions={plotOptions}
+						onNChange={this.onNChange}
+						onPChange={this.onPChange}
+						onColorChange={this.onColorChange}
+					/>
+					<AdvancedOptions
+						plotId={plotId}
+						plotOptions={plotOptions}
+						toggleSigmaRadius={this.toggleSigmaRadius}
+						onSigmaRadiusChange={this.onSigmaRadiusChange}
+					/>
+				</PlotController>
+			)}
+		);
 
 		return (
 			<div id="main">
 				<ChartController 
-					show={this.state.showChartController}
-					plotData={this.state.chartOptions.data}
 					addPlot={this.addPlot}
-					deletePlot={this.deletePlot}
-					changePlotName={this.changePlotName}
-					onNChange={this.handleNChange}
-					onPChange={this.handlePChange}
-					onColorChange={this.handleColorChange}
-					toggleSigmaRadius={this.toggleSigmaRadius}
-					onSigmaRadiusChange={this.handleSigmaRadiusChange}
-				/>
-				<div className={wrapperClasses}>
-					<button id="chart-controller-togglebutton"
-						onClick={this.toggleChartController}
-					/>
+				>
+					{plotControllers}
+				</ChartController>
+				<div className="page-content-wrapper">
 					<CanvasJSChart 
 						containerProps={{
 							width: "100%",
