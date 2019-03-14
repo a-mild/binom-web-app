@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 //import update from 'immutability-helper';
 
 import { } from "../../../functions/myMath";
@@ -11,6 +11,19 @@ import AdvancedOptions from "./AdvancedOptions";
 
 import "./PlotController.css";
 
+
+function EditPlotNameButton(props) {
+	const iconClass = (props.editing)? "fa fa-check": "fa fa-pencil";
+
+	return (<Fragment>
+				<button className="icon-button"	
+					onClick={(e) =>props.onClick(e)}
+				>
+					<i className={iconClass}/>
+				</button>
+			</Fragment>
+	);
+}
 
 class PlotController extends Component {
 	constructor(props) {
@@ -37,11 +50,15 @@ class PlotController extends Component {
 	}
 
 	deletePlot = (e) => {
-		this.props.deletePlot(this.props.plotId);
+		e.stopPropagation();
+		const msg = `Do you really want to delete "${this.props.plotName}"?`;
+		if ( window.confirm(msg) ) {
+			this.props.deletePlot(this.props.plotId);
+		}
 	}
 
-	changePlotName = (e) => {
-		this.props.changePlotName(this.props.plotId, e.target.value);
+	handlePlotNameChange = (e) => {
+		this.props.handlePlotNameChange(this.props.plotId, e.target.value);
 	}
 
 	renderPlotControllerBar = () => {
@@ -49,17 +66,19 @@ class PlotController extends Component {
 			<div className="plot-controller-dropbutton"
 				onClick={this.togglePlotOptions}
 			>
-				<ToggleArrow menuOpen={this.state.show}/>
+				<ToggleArrow 
+					menuOpen={this.state.show}
+				/>
 				<input 
 					type="text" 
 					value={this.props.plotName} 
 					disabled={!this.state.enteringName}
-					onChange={(e) => this.changePlotName(e)}
+					onChange={(e) => this.handlePlotNameChange(e)}
 				/>
-				<button className="icon-button" 
-					onClick={(e) => this.togglePlotNameInput(e)}>
-				<i className="fa fa-pencil"/>
-				</button>
+				<EditPlotNameButton 
+					editing={this.state.enteringName}
+					onClick={this.togglePlotNameInput}
+				/>
 				<button className="icon-button" 
 					onClick={(e) => this.deletePlot(e)}>
 				<i className="fa fa-trash"/>

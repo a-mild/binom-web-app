@@ -14,36 +14,31 @@ class AdvancedOptions extends Component {
 			sigma: 0,
 			sigmaScale: "percent",
 		};
-		this.toggleOptions = this.toggleOptions.bind(this);
-		this.toggleSigmaRadius = this.toggleSigmaRadius.bind(this);
-		this.handleSigmaChange = this.handleSigmaChange.bind(this);
-		this.renderSigmaInPercent = this.renderSigmaInPercent.bind(this);
-		this.renderZSigma = this.renderZSigma.bind(this);
 	}
 
-	toggleOptions() {
+	toggleOptions = () => {
 		this.setState({show: !this.state.show});
 	}
 
-	toggleSigmaRadius() {
-		this.props.functions.toggleSigmaRadius(this.props.plotId);
+	toggleSigmaRadius = () => {
+		this.props.toggleSigmaRadius(this.props.plotId);
 	}
 
-	handleSigmaChange(percent, e) {
+	handleSigmaChange = (percent, e) => {
 		if (percent===true) {
 			const p = e.target.value;
 			const z = calculateQuantile(p/100);
-			this.props.functions.onSigmaRadiusChange(this.props.plotId, z);
+			this.props.onSigmaRadiusChange(this.props.plotId, z);
 			this.setState({sigma: p, sigmaScale: "percent"});
 		}
 		else {
 			const z = e.target.value;
-			this.props.functions.onSigmaRadiusChange(this.props.plotId, z);
+			this.props.onSigmaRadiusChange(this.props.plotId, z);
 			this.setState({sigma: z, sigmaScale: "z"});
 		}
 	}
 
-	renderSigmaInPercent() {
+	renderSigmaInPercent = () => {
 		const showSigmaRadius = this.props.plotOptions.showStriplines.sigmaRadius;
 		let p = (this.state.sigmaScale === "percent") ? this.state.sigma : 100*2*Phi(this.state.sigma);
 		p = Math.round(p*1000)/1000;
@@ -82,7 +77,7 @@ class AdvancedOptions extends Component {
 			);
 	}
 
-	renderZSigma() {
+	renderZSigma = () => {
 		let z = (this.state.sigmaScale === "z") ? this.state.sigma : calculateQuantile(this.state.sigma/100);
 		z = Math.round(z*1000)/1000;
 		const showSigmaRadius = this.props.plotOptions.showStriplines.sigmaRadius;

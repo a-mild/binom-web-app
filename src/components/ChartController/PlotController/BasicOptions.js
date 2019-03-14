@@ -17,7 +17,23 @@ class BasicOptions extends Component {
 		this.setState({show: !this.state.show})
 	}
 
-	isChecked = (type) => {
+	handleFunctionTypeChange = (e) => {
+		this.props.handleFunctionTypeChange(this.props.plotId, e.target.value);
+	}
+
+	handleNChange = (e) => {
+		this.props.handleNChange(this.props.plotId, e.target.value);
+	}
+
+	handlePChange = (e) => {
+		this.props.handlePChange(this.props.plotId, e.target.value);
+	}
+
+	handleColorChange = (e) => {
+		this.props.handleColorChange(this.props.plotId, e.target.value);
+	}
+
+	isRadioChecked = (type) => {
 		return (type == this.props.plotOptions.functionType)? true : false
 		}
 
@@ -29,8 +45,10 @@ class BasicOptions extends Component {
 					type="radio" 
 					name="plot-type" 
 					id="binom-pdf" 
-					value="BinomPDF"
-					checked={true}/> BinomPDF</label>
+					value="binomPDF"
+					checked={this.isRadioChecked("binomPDF")}
+					onChange={(e) => this.handleFunctionTypeChange(e)}
+				/> BinomPDF</label>
 				<div>
 				<label htmlFor="binom-cdf">
 				<input 
@@ -38,7 +56,10 @@ class BasicOptions extends Component {
 					name="plot-type"
 					id="binom-cdf"
 					onChange={console.log(this)}
-					value="BinomCDF"/> BinomCDF</label>
+					value="binomCDF"
+					checked={this.isRadioChecked("binomCDF")}
+					onChange={(e) => this.handleFunctionTypeChange(e)}
+				/> BinomCDF</label>
 				</div>
 				<div>
 				<label htmlFor="1-binom-cdf">
@@ -46,7 +67,10 @@ class BasicOptions extends Component {
 					type="radio" 
 					name="plot-type" 
 					id="1-binom-cdf"
-					value="1-BinomCDF"/> 1 - BinomCDF</label>
+					value="1-binomCDF"
+					checked={this.isRadioChecked("1-binomCDF")}
+					onChange={(e) => this.handleFunctionTypeChange(e)}
+				/> 1 - BinomCDF</label>
 				</div>
 			</div>
 			);
@@ -110,18 +134,6 @@ class BasicOptions extends Component {
 					onChange={this.handleColorChange}
 				/>
 			</div>)
-	}
-
-	handleNChange = (e) => {
-		this.props.functions.onNChange(this.props.plotId, e.target.value);
-	}
-
-	handlePChange = (e) => {
-		this.props.functions.onPChange(this.props.plotId, e.target.value);
-	}
-
-	handleColorChange = (e) => {
-		this.props.functions.onColorChange(this.props.plotId, e.target.value);
 	}
 
 	render() {

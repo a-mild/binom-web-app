@@ -82,14 +82,6 @@ export function calculateQuantile(p) {
 	return inversePhi((p+1)/2)
 }
 
-export function createDataPoints(n, p) {
-	let datapoints = []
-	for (let k=0; k<=n; k++) {
-		datapoints.push({x: k, y: binomPDF(n, p, k)});
-	}
-	return datapoints
-}
-
 export function hexToRgb(hexString) {
 	const r = parseInt(hexString.slice(1, 3), 16);
 	const g = parseInt(hexString.slice(3, 5), 16);

@@ -1,15 +1,15 @@
 import React, { Component } from 'react';
 import update from 'immutability-helper';
 
-import { createDataPoints, calculateMu, calculateSigma, hexToRgb, toRgbaString } from "./functions/myMath";
+import { calculateMu, calculateSigma, hexToRgb, toRgbaString, binomPDF, binomCDF } from "./functions/myMath";
 
 import ChartController from "./components/ChartController/ChartController";
 import PlotController from "./components/ChartController/PlotController/PlotController";
 import BasicOptions from "./components/ChartController/PlotController/BasicOptions";
-import AdvancedOptions from "./components/ChartController/PlotController/AdvancedOptions"
+import AdvancedOptions from "./components/ChartController/PlotController/AdvancedOptions";
 import CanvasJSReact from './assets/js/canvasjs.react';
 
-import "./App.css"
+import "./App.css";
 
 // var CanvasJSReact = require('./assets/js/canvasjs.react');
 const CanvasJS = CanvasJSReact.CanvasJS;
@@ -47,14 +47,34 @@ class App extends Component {
 		this.color = "#000000";
 		this.yValueFormatString = "##0.##%";
 		this.functionType = "binomPDF";
-		this.dataPoints = createDataPoints(20, 0.5);
 		this.n = 20;
 		this.p = 50;
 		this.z = 0;
 		this.showStriplines = {
 			sigmaRadius: false,
 			mu: false,
-		}
+		};
+		Object.defineProperty(this, "dataPoints", {
+			get() {
+				let func;
+				switch(this.functionType) {
+					case "binomPDF":
+						func = binomPDF;
+						break;
+					case "binomCDF":
+						func = binomCDF;
+						break;
+					case "1-binomCDF":
+						func = (n, p, k) => 1 - binomCDF(n, p, k);
+						break;
+				};
+				let dataPoints = []
+				for (let k=0; k<=this.n; k++) {
+					dataPoints.push({x: k, y: func(this.n, this.p, k)});
+				}
+				return dataPoints
+			}
+		});
 	}
 
 	addPlot = () => {
@@ -73,7 +93,7 @@ class App extends Component {
 		this.setState(newstate);
 	}
 
-	changePlotName = (plotId, plotName) => {
+	handlePlotNameChange = (plotId, plotName) => {
 		const newstate = update(this.state, {
 			chartOptions: {
 				data: {[plotId]: {name: {$set: plotName}}}
@@ -82,27 +102,37 @@ class App extends Component {
 		this.setState(newstate);
 	}
 
+	handleFunctionTypeChange = (plotId, functionName) => {
+		const newstate = update(this.state, {
+			chartOptions: {
+				data: {[plotId]: {
+					functionType: {$set: functionName}}}
+			}
+		});
+		this.setState(newstate);
+	}
+
 	handleNChange = (plotId, n) => {
 		const p = this.state.chartOptions.data[plotId].p;
-		const newdps = createDataPoints(n, p/100);
+		//const newdps = createDataPoints(n, p/100);
 		const newstate = update(this.state, {
 			chartOptions: {
 				data: {[plotId]: {
 					n: {$set: n},
 					dataPoints: {$set: newdps}}}},
-			});
-		this.setState(newstate)
+		});
+		this.setState(newstate);
 	}
 
 	handlePChange= (plotId, p) => {
 		const n = this.state.chartOptions.data[plotId].n;
-		const newdps = createDataPoints(n, p/100);
+		//const newdps = createDataPoints(n, p/100);
 		const newstate = update(this.state, {
 			chartOptions: {
 				data: {[plotId]: {
 					p: {$set: p},
 					dataPoints: {$set: newdps}}}},
-			});
+		});
 		this.setState(newstate);
 	}
 
@@ -118,10 +148,10 @@ class App extends Component {
 	toggleSigmaRadius = (plotId) => {
 		const showSigmaRadius = this.state.chartOptions.data[plotId].showStriplines.sigmaRadius;
 		let newstate = update(this.state, {
-			chartOptions: {data: {[plotId]: {showStriplines: 
-				{sigmaRadius: {$set: !showSigmaRadius}}}}}
+			chartOptions: {
+				data: {[plotId]: {
+					showStriplines: {sigmaRadius: {$set: !showSigmaRadius}}}}}
 		});
-
 		// updating state happens here:
 		this.updateStriplines(newstate);
 	}
@@ -132,7 +162,8 @@ class App extends Component {
 
 	handleSigmaRadiusChange = (plotId, z) => {
 		let newstate = update(this.state, {
-			chartOptions: {data: {[plotId]: {z: {$set: z}}}}
+			chartOptions: {
+				data: {[plotId]: {z: {$set: z}}}}
 		});
 
 		// updating state happens here:
@@ -205,21 +236,22 @@ class App extends Component {
 				<PlotController
 					plotId={plotId}
 					plotName={plotOptions.name}
-					changePlotName={this.changePlotName}
+					handlePlotNameChange={this.handlePlotNameChange}
 					deletePlot={this.deletePlot}
 				>
 					<BasicOptions
 						plotId={plotId}
 						plotOptions={plotOptions}
-						onNChange={this.onNChange}
-						onPChange={this.onPChange}
-						onColorChange={this.onColorChange}
+						handleFunctionTypeChange={this.handleFunctionTypeChange}
+						handleNChange={this.handleNChange}
+						handlePChange={this.handlePChange}
+						handleColorChange={this.handleColorChange}
 					/>
 					<AdvancedOptions
 						plotId={plotId}
 						plotOptions={plotOptions}
 						toggleSigmaRadius={this.toggleSigmaRadius}
-						onSigmaRadiusChange={this.onSigmaRadiusChange}
+						handleSigmaRadiusChange={this.handleSigmaRadiusChange}
 					/>
 				</PlotController>
 			)}
@@ -227,9 +259,7 @@ class App extends Component {
 
 		return (
 			<div id="main">
-				<ChartController 
-					addPlot={this.addPlot}
-				>
+				<ChartController addPlot={this.addPlot}>
 					{plotControllers}
 				</ChartController>
 				<div className="page-content-wrapper">
@@ -242,9 +272,9 @@ class App extends Component {
 						onRef={ref => this.chart = ref}
 					/>
 				</div>
-			</div>);
+			</div>
+		);
 	}
 }
-
 
 export default App;
