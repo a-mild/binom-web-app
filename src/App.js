@@ -15,6 +15,72 @@ import "./App.css";
 const CanvasJS = CanvasJSReact.CanvasJS;
 const CanvasJSChart = CanvasJSReact.CanvasJSChart;
 
+function DefaultPlot() {
+	this.type = "column";
+	this.name = "Plot 1";
+	this.showInLegend = true;
+	this.color = "#000000";
+	this.yValueFormatString = "##0.##%";
+	this._functionType = "binomPDF";
+	this._n = 20;
+	this._p = 50;
+	this.z = 0;
+	this.showStriplines = {
+		sigmaRadius: false,
+		mu: false,
+	};
+	this.dataPoints = this.createDataPoints();
+}
+
+DefaultPlot.prototype = {
+	createDataPoints() {
+		let func;
+		switch(this.functionType) {
+			case "binomPDF":
+				func = binomPDF;
+				break;
+			case "binomCDF":
+				func = binomCDF;
+				break;
+			case "1-binomCDF":
+				func = (n, p, k) => 1 - binomCDF(n, p, k);
+				break;
+		};
+		let dataPoints = []
+		for (let k=0; k<=this._n; k++) {
+			dataPoints.push({x: k, y: func(this._n, this._p/100, k)});
+		}
+		return dataPoints;
+	},
+
+	get functionType() {
+		return this._functionType;
+	},
+
+	set functionType(value) {
+		this._functionType = value;
+		this.dataPoints = this.createDataPoints(); 
+	},
+
+	get n() {
+		return this._n;
+	},
+
+	set n(value) {
+		this._n = value;
+		this.dataPoints = this.createDataPoints();
+	},
+
+	get p() {
+		return this._p;
+	},
+
+	set p(value) {
+		this._p = value;
+		this.dataPoints = this.createDataPoints();
+	},
+}
+
 
 class App extends Component {
 	constructor(props) {
@@ -34,52 +100,16 @@ class App extends Component {
 					valueFormatString: "##0.##%",
 				},
 				data: [ 
-					new this.DefaultPlot(),
+					new DefaultPlot,
 				],
 			}
 		};
 	}
 
-	DefaultPlot() {
-		this.type = "column";
-		this.name = "Plot 1";
-		this.showInLegend = true;
-		this.color = "#000000";
-		this.yValueFormatString = "##0.##%";
-		this.functionType = "binomPDF";
-		this.n = 20;
-		this.p = 50;
-		this.z = 0;
-		this.showStriplines = {
-			sigmaRadius: false,
-			mu: false,
-		};
-		Object.defineProperty(this, "dataPoints", {
-			get() {
-				let func;
-				switch(this.functionType) {
-					case "binomPDF":
-						func = binomPDF;
-						break;
-					case "binomCDF":
-						func = binomCDF;
-						break;
-					case "1-binomCDF":
-						func = (n, p, k) => 1 - binomCDF(n, p, k);
-						break;
-				};
-				let dataPoints = []
-				for (let k=0; k<=this.n; k++) {
-					dataPoints.push({x: k, y: func(this.n, this.p, k)});
-				}
-				return dataPoints
-			}
-		});
-	}
 
 	addPlot = () => {
 		const newstate = update(this.state, {
-			chartOptions: {data: {$push: [new this.DefaultPlot()]}}
+			chartOptions: {data: {$push: [new DefaultPlot]}}
 		});
 		this.setState(newstate);
 	}
@@ -118,8 +148,7 @@ class App extends Component {
 		const newstate = update(this.state, {
 			chartOptions: {
 				data: {[plotId]: {
-					n: {$set: n},
-					dataPoints: {$set: newdps}}}},
+					n: {$set: n}}}},
 		});
 		this.setState(newstate);
 	}
@@ -130,8 +159,7 @@ class App extends Component {
 		const newstate = update(this.state, {
 			chartOptions: {
 				data: {[plotId]: {
-					p: {$set: p},
-					dataPoints: {$set: newdps}}}},
+					p: {$set: p}}}},
 		});
 		this.setState(newstate);
 	}

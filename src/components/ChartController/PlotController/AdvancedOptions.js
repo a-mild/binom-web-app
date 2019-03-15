@@ -28,12 +28,12 @@ class AdvancedOptions extends Component {
 		if (percent===true) {
 			const p = e.target.value;
 			const z = calculateQuantile(p/100);
-			this.props.onSigmaRadiusChange(this.props.plotId, z);
+			this.props.handleSigmaRadiusChange(this.props.plotId, z);
 			this.setState({sigma: p, sigmaScale: "percent"});
 		}
 		else {
 			const z = e.target.value;
-			this.props.onSigmaRadiusChange(this.props.plotId, z);
+			this.props.handleSigmaRadiusChange(this.props.plotId, z);
 			this.setState({sigma: z, sigmaScale: "z"});
 		}
 	}
