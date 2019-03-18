@@ -1,12 +1,4 @@
-#main {
-    height: 100%;
-    font-family: "Trebuchet MS", Helvetica, sans-serif;
-	display: flex;
-	justify-content: stretch;
-}
-
-.page-content-wrapper {
-	display: flex;
+#page-content {
 	height: 100%;
 	width: 80%;
 	margin-left: 20%;

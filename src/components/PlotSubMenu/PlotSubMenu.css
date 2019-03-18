@@ -1,0 +1,45 @@
+.plot-submenu {
+	margin-left: 0.5em;
+}
+
+.plot-submenu-content {
+	font-size: 80%;
+}
+
+.controller-row {
+	width: 100%;
+	padding: 0.3em 0;
+	display: flex;
+	flex-flow: row nowrap;
+}
+
+.label-column {
+	width: 25%;
+	padding-right: 0.3em;
+	text-align: right;
+}
+
+.input-column {
+	width: 75%;
+	display: flex;
+	flex-flow: column;
+}
+
+input[type="radio"] {
+}
+
+input[type="number"] {
+	width: 95%;
+	padding-left: 0.2em;
+	text-align: left;
+	font-family: "Trebuchet MS", Helvetica, sans-serif;
+	font-size: 100%;
+}
+
+input[type="color"] {
+	width: 95%;
+}
+
+input[type="range"] {
+	width: 95%;
+}

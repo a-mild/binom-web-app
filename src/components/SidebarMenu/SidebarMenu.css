@@ -1,0 +1,22 @@
+#sidebar-menu {
+	height: 100%;
+	width: 20%;
+
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 1;
+
+	background-color: honeydew;
+	box-shadow: 5px 5px 10px honeydew;
+
+	font-family: "Trebuchet MS", Helvetica, sans-serif;
+	font-style: normal;
+	font-size: 90%;
+
+	overflow-x: auto;
+	overflow-y: scroll;
+
+	display: flex;
+	flex-direction: column;
+}
