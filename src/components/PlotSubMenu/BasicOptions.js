@@ -24,7 +24,7 @@ class BasicOptions extends Component {
     }
 
     isRadioChecked = (type) => {
-        return (type === this.props.plotOptions.functionType)? true : false
+        return (type === this.props.plotData.functionType)? true : false
         }
 
     renderTypeController = () => {
@@ -75,7 +75,7 @@ class BasicOptions extends Component {
                     type="number" 
                     className="input-number"
                     min="0"
-                    value={this.props.plotOptions.n}
+                    value={this.props.plotData.n}
                     onChange={this.handleNChange}
                 />
             </form>
@@ -102,14 +102,14 @@ class BasicOptions extends Component {
                 type="number"
                 className="input-number"
                 min="0" max="100" step="0.01"
-                value={this.props.plotOptions.p}
+                value={this.props.plotData.p}
                 onChange={this.handlePChange}
                 />
                 <input 
                     type="range" 
                     list="tickmarks"
                     min="0" max="100" step="0.01"
-                    value={this.props.plotOptions.p}
+                    value={this.props.plotData.p}
                     onChange={this.handlePChange}
                     />
             </form>
@@ -122,15 +122,15 @@ class BasicOptions extends Component {
                 <input 
                     type="color"
                     id="plot-color-input"
-                    value={this.props.plotOptions.color}
+                    value={this.props.plotData.color}
                     onChange={this.handleColorChange}
                 />
             </form>)
     }
 
     render() {
-        const n = this.props.plotOptions.n;
-        const p = this.props.plotOptions.p;
+        const n = this.props.plotData.n;
+        const p = this.props.plotData.p;
         const mu = Math.round(1000*calculateMu(n, p/100))/1000;
         const sigma = Math.round(1000*calculateSigma(n, p/100))/1000;
 

@@ -23,9 +23,9 @@ class AdvancedOptions extends Component {
     }
 
     renderSigmaInPercent = () => {
-        const plotOptions = this.props.plotOptions
-        const showSigmaRadius = plotOptions.showStriplines.sigmaRadius;
-        let p = 100*2*Phi(plotOptions.z);
+        const plotData = this.props.plotData
+        const showSigmaRadius = plotData.showStriplines.sigmaRadius;
+        let p = 100*2*Phi(plotData.z);
         p = Math.round(p*1000)/1000;
 
         return (
@@ -63,8 +63,8 @@ class AdvancedOptions extends Component {
     }
 
     renderZSigma = () => {
-        let z = Math.round(this.props.plotOptions.z*1000)/1000;
-        const showSigmaRadius = this.props.plotOptions.showStriplines.sigmaRadius;
+        let z = Math.round(this.props.plotData.z*1000)/1000;
+        const showSigmaRadius = this.props.plotData.showStriplines.sigmaRadius;
 
         return (
             <form className="input-column">
@@ -80,7 +80,7 @@ class AdvancedOptions extends Component {
     }
 
     render() {
-        const showSigmaRadius = this.props.plotOptions.showStriplines.sigmaRadius;
+        const showSigmaRadius = this.props.plotData.showStriplines.sigmaRadius;
 
         return (
             <PlotSubMenu name="Advanced Options" open={false}>

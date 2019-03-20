@@ -3,109 +3,100 @@ import update from 'immutability-helper';
 
 import { calculateMu, calculateSigma, hexToRgb, toRgbaString } from "./functions/myMath";
 
+import PlotData from "./components/PlotObject";
+import Plot from "react-plotly.js";
 import SidebarMenu from "./components/SidebarMenu/SidebarMenu";
 import PlotMenu from "./components/PlotMenu/PlotMenu";
 import BasicOptions from "./components/PlotSubMenu/BasicOptions";
 import AdvancedOptions from "./components/PlotSubMenu/AdvancedOptions";
-import CanvasJSReact from './assets/js/canvasjs.react';
-
-import Plot from "./components/PlotObject";
 
 import "./App.css";
-
-// var CanvasJSReact = require('./assets/js/canvasjs.react');
-const CanvasJS = CanvasJSReact.CanvasJS;
-const CanvasJSChart = CanvasJSReact.CanvasJSChart;
 
 
 class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            showSidebarMenu: true,
-            chartOptions: {
-                interactivityEnabled: true,
-                exportEnabled: true,
-                axisX: {
+            data: [new PlotData()],
+            layout: {
+                xaxis: {
                     title: "k",
-                    stripLines: [],
                 },
-                axisY: {
-                    title: "Probability",
-                    minimum: 0,
-                    valueFormatString: "##0.##%",
+                yaxis: {
+                    title: "Probabilty",
+                    visible: true,
+                    side: "left",
+                    tickformat: "%",
+                    showgrid: true,
                 },
-                data: [ 
-                    new Plot(),
-                ],
+                yaxis2: {
+                    side: "right",
+                    overlaying: 'y',
+                    tickformat: "%",
+                    range: [0, 1],
+                },
+                barmode: "group",
+                bargap: 0.15,
+                bargroupgap: 0.1,
+                showlegend: true,
                 legend: {
-                    cursor: "pointer",
-                    itemclick: this.handleLegendClick,
-                },
-            },
+                    orientation: "h",
 
+                },
+                shapes: []
+
+            },
         };
     }
 
 
     addPlot = () => {
         const newstate = update(this.state, {
-            chartOptions: {data: {$push: [new Plot()]}}
+            data: {$push: [new PlotData()]}
         });
         this.setState(newstate);
     }
 
     deletePlot = (plotId) => {
-        let plots = this.state.chartOptions.data.slice()
+        let plots = this.state.data.slice()
         plots.splice(plotId, 1);
         const newstate = update(this.state, {
-            chartOptions: {data: {$set: plots}}
+            data: {$set: plots}
         });
         this.setState(newstate);
     }
 
     handlePlotNameChange = (plotId, plotName) => {
         const newstate = update(this.state, {
-            chartOptions: {
-                data: {[plotId]: {name: {$set: plotName}}}
-            }
+            data: {[plotId]: {name: {$set: plotName}}}
         });
         this.setState(newstate);
     }
 
     handleFunctionTypeChange = (plotId, functionName) => {
         const newstate = update(this.state, {
-            chartOptions: {
-                data: {[plotId]: {
-                    functionType: {$set: functionName}}}
-            }
+            data: {[plotId]: {functionType: {$set: functionName}}}
         });
         this.setState(newstate);
     }
 
     handleNChange = (plotId, n) => {
         const newstate = update(this.state, {
-            chartOptions: {
-                data: {[plotId]: {
-                    n: {$set: n}}}},
+            data: {[plotId]: {n: {$set: n}}}
         });
         this.setState(newstate);
     }
 
     handlePChange= (plotId, p) => {
         const newstate = update(this.state, {
-            chartOptions: {
-                data: {[plotId]: {
-                    p: {$set: p}}}},
+            data: {[plotId]: {p: {$set: p}}}
         });
         this.setState(newstate);
     }
 
     handleColorChange = (plotId, color) => {
         const newstate = update(this.state, {
-            chartOptions: {
-                data: {[plotId]: {color: {$set: color}}},
-            }
+            data: {[plotId]: {color: {$set: color}}}
         });
         this.setState(newstate);
     }
@@ -113,9 +104,8 @@ class App extends Component {
     toggleSigmaRadius = (plotId) => {
         const showSigmaRadius = this.state.chartOptions.data[plotId].showStriplines.sigmaRadius;
         let newstate = update(this.state, {
-            chartOptions: {
-                data: {[plotId]: {
-                    showStriplines: {sigmaRadius: {$set: !showSigmaRadius}}}}}
+            data: {[plotId]: {
+                    showStriplines: {sigmaRadius: {$set: !showSigmaRadius}}}}
         });
         // updating state happens here:
         this.updateStriplines(newstate);
@@ -127,8 +117,7 @@ class App extends Component {
 
     handleSigmaRadiusChange = (plotId, z) => {
         let newstate = update(this.state, {
-            chartOptions: {
-                data: {[plotId]: {z: {$set: z}}}}
+            data: {[plotId]: {z: {$set: z}}}
         });
 
         // updating state happens here:
@@ -138,7 +127,7 @@ class App extends Component {
     updateStriplines = (state) => {
         let allStriplines = [];
 
-        state.chartOptions.data.forEach( (plot, plotId) => {
+        state.data.forEach( (plot, plotId) => {
             state = this.setDataPointsColor(state, plotId, 
                         0, plot.n, 
                         plot.color);
@@ -201,16 +190,14 @@ class App extends Component {
 
     togglePlotVisibility = (plotId) => {
         const newstate = update(this.state, {
-            chartOptions: {
-                data: {[plotId]: {$toggle: ["visible"]}}
-            }
+            data: {[plotId]: {$toggle: ["visible"]}}
         })
         this.setState(newstate);
     }
 
     componentDidMount() {
         window.addEventListener("beforeunload", this.handleWindowClose);
-        if (localStorage.getItem("plotOptions")) {
+        if (localStorage.getItem("data")) {
             this.loadPlotOptions();
         }
     }
@@ -220,44 +207,44 @@ class App extends Component {
     }
 
     savePlotOptions = () => {
-        const plotOptions = JSON.stringify(this.state.chartOptions.data);
-        localStorage.setItem("plotOptions", plotOptions);
+        const data = JSON.stringify(this.state.data);
+        localStorage.setItem("data", data);
     }
 
     loadPlotOptions = () => {
-        let plotOptions = JSON.parse(localStorage.getItem("plotOptions"));
-        plotOptions = plotOptions.map( (plotOptions) => {
+        let data = JSON.parse(localStorage.getItem("data"));
+        data = data.map( (trace) => {
             const plotArguments = [
-                plotOptions.name,
-                plotOptions.visible,
-                plotOptions._n,
-                plotOptions._p,
-                plotOptions._z,
-                plotOptions.color,
-                plotOptions._functionType
+                trace.name,
+                trace.visible,
+                trace._n,
+                trace._p,
+                trace._z,
+                trace.color,
+                trace._functionType
             ];
-            return new Plot(...plotArguments);
+            return new PlotData(...plotArguments);
         });
         const newstate = update(this.state, {
-            chartOptions: {data: {$set: plotOptions}}
+            data: {$set: data}
         });
         this.setState(newstate);
     }
 
     render() {
-        const plotControllers = this.state.chartOptions.data.map( (plotOptions, plotId) => {
+        const plotMenus = this.state.data.map( (plotData, plotId) => {
             return (
                 <PlotMenu
                     plotId={plotId}
-                    plotName={plotOptions.name}
-                    visible={plotOptions.visible}
+                    plotName={plotData.name}
+                    visible={plotData.visible}
                     handlePlotNameChange={this.handlePlotNameChange}
                     toggleVisibility={this.togglePlotVisibility}
                     deletePlot={this.deletePlot}
                 >
                     <BasicOptions
                         plotId={plotId}
-                        plotOptions={plotOptions}
+                        plotData={plotData}
                         handleFunctionTypeChange={this.handleFunctionTypeChange}
                         handleNChange={this.handleNChange}
                         handlePChange={this.handlePChange}
@@ -265,7 +252,7 @@ class App extends Component {
                     />
                     <AdvancedOptions
                         plotId={plotId}
-                        plotOptions={plotOptions}
+                        plotData={plotData}
                         toggleSigmaRadius={this.toggleSigmaRadius}
                         handleSigmaRadiusChange={this.handleSigmaRadiusChange}
                     />
@@ -276,16 +263,13 @@ class App extends Component {
         return (
             <Fragment>
                 <SidebarMenu addPlot={this.addPlot}>
-                    {plotControllers}
+                    {plotMenus}
                 </SidebarMenu>
                 <main id="page-content">
-                    <CanvasJSChart 
-                        containerProps={{
-                            width: "96%",
-                            height: "96%", 
-                            margin: "2%"}}
-                        options={this.state.chartOptions}
-                        onRef={ref => this.chart = ref}
+                    <Plot
+                        data={this.state.data}
+                        layout={this.state.layout}
+                        style={{width: "100%", height: "100%"}}
                     />
                 </main>
             </Fragment>

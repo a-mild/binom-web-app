@@ -1,25 +1,37 @@
 import { binomPDF, binomCDF } from "../functions/myMath";
 
-function Plot(name="Default Plot", visible=true, n=20, p=50, z=1, color="#000000", functionType="binomPDF") {
-    this.type = "column";
+function PlotData(name="Default Plot", visible=true, n=20, p=50, z=1, color="#000000", functionType="binomPDF") {
+    this.type = "bar";
     this.name = name;
     this.visible = visible;
-    this.showInLegend = true;
-    this.color = color;
-    this.yValueFormatString = "##0.##%";
-    this._functionType = functionType;
+    this.showlegend = true;
     this._n = n;
     this._p = p;
     this._z = z;
+    this._functionType = functionType;
+    this.x = this.createXArray();
+    this.y = this.createYArray();
+    this.yaxis = "y1";
+    this.marker = {
+        color: color,
+    };
     this.showStriplines = {
         sigmaRadius: false,
         mu: false,
     };
-    this.dataPoints = this.createDataPoints();
 }
 
-Plot.prototype = {
-    createDataPoints() {
+
+PlotData.prototype = {
+    createXArray() {
+        let x = []
+        for (let k=0; k <= this.n; k++) {
+            x.push(k);
+        }
+        return x
+    },
+
+    createYArray() {
         let func;
         switch(this.functionType) {
             case "binomPDF":
@@ -32,11 +44,22 @@ Plot.prototype = {
                 func = (n, p, k) => 1 - binomCDF(n, p, k);
                 break;
         };
-        let dataPoints = []
+        let y = [];
         for (let k=0; k<=this._n; k++) {
-            dataPoints.push({x: k, y: func(this._n, this._p/100, k)});
+            y.push(func(this._n, this._p/100, k));
         }
-        return dataPoints;
+        return y;
+    },
+
+    setYAxis() {
+        switch(this.functionType) {
+            case "binomPDF":
+                return "y"
+            case "binomCDF":
+                return "y2"
+            case "1-binomCDF":
+                return "y2"
+        }
     },
 
     get functionType() {
@@ -45,7 +68,9 @@ Plot.prototype = {
 
     set functionType(value) {
         this._functionType = value;
-        this.dataPoints = this.createDataPoints(); 
+        this.x = this.createXArray();
+        this.y = this.createYArray();
+        this.yaxis = this.setYAxis();
     },
 
     get n() {
@@ -54,7 +79,8 @@ Plot.prototype = {
 
     set n(value) {
         this._n = value;
-        this.dataPoints = this.createDataPoints();
+        this.x = this.createXArray();
+        this.y = this.createYArray();
     },
 
     get p() {
@@ -63,8 +89,17 @@ Plot.prototype = {
 
     set p(value) {
         this._p = value;
-        this.dataPoints = this.createDataPoints();
+        this.x = this.createXArray();
+        this.y = this.createYArray();
+    },
+
+    get z() {
+        return this._z;
+    },
+
+    set z(value) {
+        this._z = value;
     },
 }
 
-export default Plot;
+export default PlotData;
