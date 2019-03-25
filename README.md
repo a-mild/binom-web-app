@@ -1,3 +1,16 @@
+# [Web-App for binomial distributions](http://milden.net/binomDist/index.html)
+
+With this web-app you can display and compare multiple binomial distributions:
+
+* [binomPDF](https://en.wikipedia.org/wiki/Binomial_distribution#Probability_mass_function): binomial probability density function 
+* [binomCDF](https://en.wikipedia.org/wiki/Binomial_distribution#Cumulative_distribution_function): binomial cumulative density function
+* 1 - binomCDF
+
+Furthermore you can display the expected value &mu; and the sigma radius z&sigma;, either in multiples of z or in percent of the cumulated probability.
+
+
+---
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts

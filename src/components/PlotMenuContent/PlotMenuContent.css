@@ -21,8 +21,10 @@
 
 .input-column {
 	width: 75%;
-	display: flex;
-	flex-flow: column;
+}
+
+.input-column-row {
+	width: 100%;
 }
 
 input[type="radio"] {

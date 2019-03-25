@@ -5,7 +5,7 @@
   "private": true,
   "dependencies": {
     "immutability-helper": "^3.0.0",
-    "plotly.js": "^1.45.2",
+    "plotly.js": "^1.45.3",
     "react": "^16.6.3",
     "react-dom": "^16.6.3",
     "react-plotly.js": "^2.3.0",

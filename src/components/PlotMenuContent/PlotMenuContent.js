@@ -1,12 +1,12 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 
-import { calculateMu, calculateSigma } from "../../functions/myMath";
+import { calculateQuantile, Phi } from "../../functions/myMath";
 
-import PlotSubMenu from "./PlotSubMenu";
-import "./BasicOptions.css";
+import IconButton from "../IconButton";
+import "./PlotMenuContent.css";
 
 
-class BasicOptions extends Component {
+class PlotMenuContent extends Component {
     handleFunctionTypeChange = (e) => {
         this.props.handleFunctionTypeChange(this.props.plotId, e.target.value);
     }
@@ -23,6 +23,26 @@ class BasicOptions extends Component {
         this.props.handleColorChange(this.props.plotId, e.target.value);
     }
 
+    handleSigmaChange = (e, inPercent) => {
+        if (inPercent===true) {
+            const p = e.target.value;
+            const z = calculateQuantile(p/100);
+            this.props.handleSigmaRadiusChange(this.props.plotId, z);
+        }
+        else {
+            const z = e.target.value;
+            this.props.handleSigmaRadiusChange(this.props.plotId, z);
+        }
+    }
+
+    toggleMu = (e) => {
+    	this.props.toggleMu(this.props.plotId);
+    }
+
+    toggleSigma = (e) => {
+        this.props.toggleSigma(this.props.plotId);
+    }
+
     isRadioChecked = (type) => {
         return (type === this.props.plotData.functionType)? true : false
         }
@@ -30,7 +50,7 @@ class BasicOptions extends Component {
     renderTypeController = () => {
         return (
             <form className="input-column">
-                <div>
+                <div className="input-column-row">
                 <label htmlFor="binom-pdf">
                 <input
                     type="radio"
@@ -42,7 +62,7 @@ class BasicOptions extends Component {
                 /> BinomPDF
                 </label>
                 </div>
-                <div>
+                <div className="input-column-row">
                 <label htmlFor="binom-cdf">
                 <input 
                     type="radio" 
@@ -53,7 +73,7 @@ class BasicOptions extends Component {
                     onChange={(e) => this.handleFunctionTypeChange(e)}
                 /> BinomCDF</label>
                 </div>
-                <div>
+                <div className="input-column-row">
                 <label htmlFor="1-binom-cdf">
                 <input 
                     type="radio" 
@@ -99,11 +119,10 @@ class BasicOptions extends Component {
                   <option value="100"/>
                 </datalist>
                 <input
-                type="number"
-                className="input-number"
-                min="0" max="100" step="0.01"
-                value={this.props.plotData.p}
-                onChange={this.handlePChange}
+                    type="number"
+                    min="0" max="100" step="0.01"
+                    value={this.props.plotData.p}
+                    onChange={this.handlePChange}
                 />
                 <input 
                     type="range" 
@@ -121,27 +140,88 @@ class BasicOptions extends Component {
             <form className="input-column">
                 <input 
                     type="color"
-                    id="plot-color-input"
-                    value={this.props.plotData.color}
+                    value={this.props.plotData.marker.color}
                     onChange={this.handleColorChange}
                 />
-            </form>)
+            </form>
+        );
+    }
+
+    renderSigmaRadiusController = () => {
+        const sigma = Math.round(this.props.plotData.sigma*1000)/1000;
+        let pSigma = 100*2*Phi(this.props.plotData.z);
+        pSigma = Math.round(pSigma*1000)/1000;
+        let z = Math.round(this.props.plotData.z*1000)/1000;
+
+        return (
+            <div className="input-column">
+                <div className="input-column-row">
+                    {sigma}
+                    <IconButton
+                        style={{float: "right"}}
+                        on={this.props.showSigma}
+                        iconOn="fas fa-eye"
+                        iconOff="fas fa-eye-slash"
+                        onClick={this.toggleSigma}
+                    />
+                </div>
+                <datalist id="tickmarks">
+                  <option value="0"/>
+                  <option value="10"/>
+                  <option value="20"/>
+                  <option value="30"/>
+                  <option value="40"/>
+                  <option value="50"/>
+                  <option value="60"/>
+                  <option value="70"/>
+                  <option value="80"/>
+                  <option value="90"/>
+                  <option value="100"/>
+                </datalist>
+                <input
+                    type="number"
+                    min="0" max="100" step="0.001"
+                    value={pSigma}
+                    disabled={!this.props.showSigma}
+                    onChange={(e) => this.handleSigmaChange(e, true)}
+                />
+                <input 
+                    type="range" 
+                    list="tickmarks"
+                    min="0" max="100" step="0.01"
+                    value={pSigma}
+                    disabled={!this.props.showSigma}
+                    onChange={(e) => this.handleSigmaChange(e, true)}
+                />
+                <input
+                    type="number"
+                    min="0" step="0.001"
+                    value={z}
+                    disabled={!this.props.showSigma}
+                    onChange={(e) => this.handleSigmaChange(e, false)}
+                />
+            </div>
+        );
+
     }
 
     render() {
-        const n = this.props.plotData.n;
-        const p = this.props.plotData.p;
-        const mu = Math.round(1000*calculateMu(n, p/100))/1000;
-        const sigma = Math.round(1000*calculateSigma(n, p/100))/1000;
+        const mu = Math.round(this.props.plotData.mu*1000)/1000;
 
         return (
-            <PlotSubMenu name="Basic Options" open={true}>
+            <Fragment>
                 <div className="controller-row">
                     <div className="label-column">
                     Type
                     </div>
                     {this.renderTypeController()}
                 </div>  
+                <div className="controller-row">
+                    <div className="label-column">
+                    <label htmlFor="plot-color-input">Color</label>
+                    </div>
+                    {this.renderColorController()}
+                </div>
                 <div className="controller-row">
                     <div className="label-column">
                     n =
@@ -159,26 +239,28 @@ class BasicOptions extends Component {
                     &mu; =
                     </div>
                     <div className="input-column">
-                    {mu}
+                        <div className="input-column-row">
+                        {mu}
+                        <IconButton
+                            style={{float: "right"}}
+                        	on={this.props.showMu}
+    	                    iconOn="fas fa-eye"
+                            iconOff="fas fa-eye-slash"
+                            onClick={this.toggleMu}
+                        />
+                        </div>
                     </div>
                 </div>
                 <div className="controller-row">
                     <div className="label-column">
                     &sigma; =
                     </div>
-                    <div className="input-column">
-                    {sigma}
-                    </div>
+                    {this.renderSigmaRadiusController()}
                 </div>
-                <div className="controller-row">
-                    <div className="label-column">
-                    <label htmlFor="plot-color-input">Color</label>
-                    </div>
-                    {this.renderColorController()}
-                </div>
-            </PlotSubMenu>
+
+            </Fragment>
         );
     }
 }
 
-export default BasicOptions;
+export default PlotMenuContent;

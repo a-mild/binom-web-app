@@ -61,7 +61,7 @@ class PlotMenu extends Component {
                     type="text" 
                     value={this.props.plotName}
                     size="15"
-                    maxlength="30"
+                    maxLength="30"
                     disabled={!this.state.enteringName}
                     onChange={(e) => this.handlePlotNameChange(e)}
                 />

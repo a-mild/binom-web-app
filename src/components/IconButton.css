@@ -1,12 +1,16 @@
 .icon-button {
-	height: 1.5em;
+	height: 1.2em;
 	background-color: honeydew;
 	border: none;
-	border-radius: 10%;
+	border-radius: 15%;
 	text-align: center;
 	flex-shrink: 0;
 }
 
 .icon-button:hover {
 	background-color: lightgrey;
+}
+
+.icon-button i {
+	font-size: 80%;
 }

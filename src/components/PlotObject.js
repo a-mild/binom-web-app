@@ -1,23 +1,23 @@
-import { binomPDF, binomCDF } from "../functions/myMath";
+import { calculateMu, calculateSigma, binomPDF, binomCDF } from "../functions/myMath";
 
-function PlotData(name="Default Plot", visible=true, n=20, p=50, z=1, color="#000000", functionType="binomPDF") {
+
+function PlotData(id=0, name="Default Plot", visible=true, n=20, p=50, z=1, color="#000000", functionType="binomPDF") {
     this.type = "bar";
     this.name = name;
     this.visible = visible;
     this.showlegend = true;
     this._n = n;
     this._p = p;
+    this.mu = calculateMu(n, p/100);
+    this.sigma = calculateSigma(n, p/100);
     this._z = z;
     this._functionType = functionType;
     this.x = this.createXArray();
     this.y = this.createYArray();
-    this.yaxis = "y1";
+    this.yaxis = this.setYAxis();
+    this.offsetgroup = id + 1;
     this.marker = {
         color: color,
-    };
-    this.showStriplines = {
-        sigmaRadius: false,
-        mu: false,
     };
 }
 
@@ -54,11 +54,13 @@ PlotData.prototype = {
     setYAxis() {
         switch(this.functionType) {
             case "binomPDF":
-                return "y"
+                return ""
             case "binomCDF":
                 return "y2"
             case "1-binomCDF":
                 return "y2"
+            default:
+                return ""
         }
     },
 
@@ -81,6 +83,8 @@ PlotData.prototype = {
         this._n = value;
         this.x = this.createXArray();
         this.y = this.createYArray();
+		this.mu = calculateMu(this._n, this._p/100);
+		this.sigma = calculateSigma(this._n, this._p/100);
     },
 
     get p() {
@@ -91,6 +95,8 @@ PlotData.prototype = {
         this._p = value;
         this.x = this.createXArray();
         this.y = this.createYArray();
+        this.mu = calculateMu(this._n, this._p/100);
+    	this.sigma = calculateSigma(this._n, this._p/100);
     },
 
     get z() {

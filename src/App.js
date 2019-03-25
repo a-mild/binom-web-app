@@ -1,14 +1,13 @@
 import React, { Component, Fragment } from 'react';
+import Plot from "react-plotly.js";
 import update from 'immutability-helper';
 
-import { calculateMu, calculateSigma, hexToRgb, toRgbaString } from "./functions/myMath";
-
 import PlotData from "./components/PlotObject";
-import Plot from "react-plotly.js";
+import Line from "./components/Line";
+import Rectangle from "./components/Rectangle";
 import SidebarMenu from "./components/SidebarMenu/SidebarMenu";
 import PlotMenu from "./components/PlotMenu/PlotMenu";
-import BasicOptions from "./components/PlotSubMenu/BasicOptions";
-import AdvancedOptions from "./components/PlotSubMenu/AdvancedOptions";
+import PlotMenuContent from "./components/PlotMenuContent/PlotMenuContent";
 
 import "./App.css";
 
@@ -17,23 +16,23 @@ class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            data: [new PlotData()],
+            data: [],
             layout: {
                 xaxis: {
                     title: "k",
                 },
                 yaxis: {
-                    title: "Probabilty",
+                    title: "Probability",
                     visible: true,
                     side: "left",
                     tickformat: "%",
-                    showgrid: true,
                 },
                 yaxis2: {
+                    title: "Accumulated Probability",
+                    visible: true,
                     side: "right",
                     overlaying: 'y',
                     tickformat: "%",
-                    range: [0, 1],
                 },
                 barmode: "group",
                 bargap: 0.15,
@@ -43,25 +42,40 @@ class App extends Component {
                     orientation: "h",
 
                 },
-                shapes: []
+                shapes: [],
 
             },
         };
     }
 
+    addPlot = (plotArgs) => {
+        let newPlot;
+        if (plotArgs) {
+            newPlot = new PlotData(...plotArgs);
+        } else {
+            newPlot = new PlotData();
+        }
+        const mu = newPlot.mu;
+        const zsigma = newPlot.z*newPlot.sigma;
 
-    addPlot = () => {
-        const newstate = update(this.state, {
-            data: {$push: [new PlotData()]}
+        this.setState((prevState) => {
+            return {
+                data: prevState.data.concat(newPlot),
+                layout: {
+                    ...prevState.layout, 
+                    shapes: prevState.layout.shapes.concat(new Line(mu), new Rectangle(mu, zsigma))} 
+            };
         });
-        this.setState(newstate);
     }
 
     deletePlot = (plotId) => {
         let plots = this.state.data.slice()
         plots.splice(plotId, 1);
+        let shapes = this.state.layout.shapes.slice();
+        shapes.splice(plotId*2, 2);
         const newstate = update(this.state, {
-            data: {$set: plots}
+            data: {$set: plots},
+            layout: {shapes: {$set: shapes}}
         });
         this.setState(newstate);
     }
@@ -81,96 +95,95 @@ class App extends Component {
     }
 
     handleNChange = (plotId, n) => {
-        const newstate = update(this.state, {
+        let newstate = update(this.state, {
             data: {[plotId]: {n: {$set: n}}}
+        });
+
+        const mu = newstate.data[plotId].mu;
+        const sigma = newstate.data[plotId].sigma;
+        const z = newstate.data[plotId].z;
+        const x0 = mu - z*sigma;
+        const x1 = mu + z*sigma;
+
+        newstate = update(newstate, {
+            layout: {shapes: {
+                [2*plotId]: {
+                    x0: {$set: mu},
+                    x1: {$set: mu}
+                },
+                [2*plotId+1]: {
+                    x0: {$set: x0},
+                    x1: {$set: x1}
+                }
+            }}
         });
         this.setState(newstate);
     }
 
     handlePChange= (plotId, p) => {
-        const newstate = update(this.state, {
-            data: {[plotId]: {p: {$set: p}}}
+        let newstate = update(this.state, {
+            data: {[plotId]: {p: {$set: p}}},
+        });
+
+        const mu = newstate.data[plotId].mu;
+        const sigma = newstate.data[plotId].sigma;
+        const z = newstate.data[plotId].z;
+        const x0 = mu - z*sigma;
+        const x1 = mu + z*sigma;
+
+        newstate = update(newstate, {
+            layout: {shapes: {
+                [2*plotId]: {
+                    x0: {$set: newstate.data[plotId].mu},
+                    x1: {$set: newstate.data[plotId].mu}
+                },
+                [2*plotId+1]: {
+                    x0: {$set: x0},
+                    x1: {$set: x1}
+                }
+            }}
         });
         this.setState(newstate);
     }
 
     handleColorChange = (plotId, color) => {
         const newstate = update(this.state, {
-            data: {[plotId]: {color: {$set: color}}}
+            data: {[plotId]: {marker: {color: {$set: color}}}}
         });
         this.setState(newstate);
     }
 
-    toggleSigmaRadius = (plotId) => {
-        const showSigmaRadius = this.state.chartOptions.data[plotId].showStriplines.sigmaRadius;
-        let newstate = update(this.state, {
-            data: {[plotId]: {
-                    showStriplines: {sigmaRadius: {$set: !showSigmaRadius}}}}
+    toggleMu = (plotId) => {
+        const newstate = update(this.state, {
+            layout: {shapes: {[2*plotId]: {$toggle: ["visible", "_visible"]}}}
         });
-        // updating state happens here:
-        this.updateStriplines(newstate);
+        this.setState(newstate);
     }
 
-    toggleMuStripline = (plotId) => {
-
+    toggleSigma = (plotId) => {
+        const newstate = update(this.state, {
+            layout: {shapes: {[2*plotId+1]: {$toggle: ["visible", "_visible"]}}}
+        });
+        this.setState(newstate);
     }
 
     handleSigmaRadiusChange = (plotId, z) => {
+        const mu = this.state.data[plotId].mu;
+        const sigma = this.state.data[plotId].sigma;
+        const x0 = mu - z*sigma;
+        const x1 = mu + z*sigma;
+
         let newstate = update(this.state, {
-            data: {[plotId]: {z: {$set: z}}}
+            data: {[plotId]: {z: {$set: z}}},
+            layout: {shapes: {[2*plotId+1]: {
+                x0: {$set: x0},
+                x1: {$set: x1}
+            }}}
         });
-
-        // updating state happens here:
-        this.updateStriplines(newstate);
-    }
-
-    updateStriplines = (state) => {
-        let allStriplines = [];
-
-        state.data.forEach( (plot, plotId) => {
-            state = this.setDataPointsColor(state, plotId, 
-                        0, plot.n, 
-                        plot.color);
-
-            const showStriplines = Object.values(plot.showStriplines);
-
-            showStriplines.forEach( showStripline => {
-                if (showStripline) {
-                    const mu = calculateMu(plot.n, plot.p/100);
-                    const sigma = calculateSigma(plot.n, plot.p/100);
-                    const startValue = mu - plot.z*sigma;
-                    const endValue = mu + plot.z*sigma;
-                    const rgbaColorString = toRgbaString(hexToRgb(plot.color), 0.2);
-
-                    const newStripline = {
-                        startValue,
-                        endValue,
-                        color: plot.color,
-                        opacity: 0.3,
-                    }
-
-                    allStriplines.push(newStripline);
-
-                    // paint the bars
-                    state = this.setDataPointsColor(state, plotId, 
-                        0, plot.n, 
-                        rgbaColorString);
-                    state = this.setDataPointsColor(state, plotId, 
-                        Math.round(startValue), Math.round(endValue), 
-                        plot.color);
-                }
-            })
-
-        });
-
-        state = update(state, {
-            chartOptions: {axisX: {stripLines: {$set: allStriplines}}}
-        });
-        this.setState(state);
+        this.setState(newstate);
     }
 
     setDataPointsColor = (state, plotId, from, to, color) => {
-        //console.log(from, to);
         if (to < 0) {to = 0}
         if (from > to) {from = to} 
 
@@ -190,8 +203,26 @@ class App extends Component {
 
     togglePlotVisibility = (plotId) => {
         const newstate = update(this.state, {
-            data: {[plotId]: {$toggle: ["visible"]}}
-        })
+            data: {[plotId]: {$toggle: ["visible"]}},
+            layout: {shapes: {
+                [2*plotId]: {visible: {$apply: () => {
+                    if (!this.state.data[plotId].visible) {
+                        // return saved visible state
+                        return this.state.layout.shapes[2*plotId]._visible;
+                    } else {
+                        return false;
+                    }
+                }}},
+                [2*plotId+1]: {visible: {$apply: () => {
+                    if (!this.state.data[plotId].visible) {
+                        // return saved visible state
+                        return this.state.layout.shapes[2*plotId+1]._visible;
+                    } else {
+                        return false;
+                    }
+                }}}
+            }}
+        });
         this.setState(newstate);
     }
 
@@ -199,6 +230,8 @@ class App extends Component {
         window.addEventListener("beforeunload", this.handleWindowClose);
         if (localStorage.getItem("data")) {
             this.loadPlotOptions();
+        } else {
+            this.addPlot();
         }
     }
 
@@ -213,14 +246,29 @@ class App extends Component {
 
     loadPlotOptions = () => {
         let data = JSON.parse(localStorage.getItem("data"));
-        data = data.map( (trace) => {
+        console.log(data);
+        data.forEach( (trace, plotId) => {
+            console.log(trace);
+            const plotArguments = [
+                plotId,
+                trace.name,
+                trace.visible,
+                trace._n,
+                trace._p,
+                trace._z,
+                trace.marker.color,
+                trace._functionType
+            ];
+            this.addPlot(plotArguments);
+        });
+        /*data = data.map( (trace) => {
             const plotArguments = [
                 trace.name,
                 trace.visible,
                 trace._n,
                 trace._p,
                 trace._z,
-                trace.color,
+                trace.marker.color,
                 trace._functionType
             ];
             return new PlotData(...plotArguments);
@@ -228,32 +276,34 @@ class App extends Component {
         const newstate = update(this.state, {
             data: {$set: data}
         });
-        this.setState(newstate);
+        this.setState(newstate);*/
     }
 
     render() {
         const plotMenus = this.state.data.map( (plotData, plotId) => {
+            let muShape = this.state.layout.shapes[2*plotId];
+            let sigmaShape = this.state.layout.shapes[2*plotId+1];
+            
             return (
                 <PlotMenu
                     plotId={plotId}
                     plotName={plotData.name}
                     visible={plotData.visible}
-                    handlePlotNameChange={this.handlePlotNameChange}
                     toggleVisibility={this.togglePlotVisibility}
+                    handlePlotNameChange={this.handlePlotNameChange}
                     deletePlot={this.deletePlot}
                 >
-                    <BasicOptions
+                    <PlotMenuContent
                         plotId={plotId}
                         plotData={plotData}
                         handleFunctionTypeChange={this.handleFunctionTypeChange}
                         handleNChange={this.handleNChange}
                         handlePChange={this.handlePChange}
                         handleColorChange={this.handleColorChange}
-                    />
-                    <AdvancedOptions
-                        plotId={plotId}
-                        plotData={plotData}
-                        toggleSigmaRadius={this.toggleSigmaRadius}
+                        showMu={muShape.visible}
+                        toggleMu={this.toggleMu}
+                        showSigma={sigmaShape.visible}
+                        toggleSigma={this.toggleSigma}
                         handleSigmaRadiusChange={this.handleSigmaRadiusChange}
                     />
                 </PlotMenu>
@@ -270,6 +320,7 @@ class App extends Component {
                         data={this.state.data}
                         layout={this.state.layout}
                         style={{width: "100%", height: "100%"}}
+                        useResizeHandler={true}
                     />
                 </main>
             </Fragment>

@@ -9,7 +9,7 @@ function SidebarMenu(props) {
             <div className="bottom-content">
                 <div
                     id="add-new-plot"
-                    onClick={props.addPlot}
+                    onClick={(e) => props.addPlot()}
                 >
                     <i className="fa fa-plus fw"/>
                     Add new plot
